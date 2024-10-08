@@ -15,6 +15,7 @@ export default typescriptEslint.config(
         'error',
         { blankLine: 'always', prev: 'import', next: '*' },
         { blankLine: 'any', prev: 'import', next: 'import' },
+        { blankLine: 'always', next: 'break', prev: '*' },
         { blankLine: 'always', next: 'return', prev: '*' },
         { blankLine: 'always', prev: 'block-like', next: '*' },
         { blankLine: 'always', next: 'block-like', prev: '*' },
