@@ -1,24 +1,4 @@
-import { GamePlayer, GameTeam, GameRole } from './types'
-
-const allRoles: GameRole[] = [
-  'sheriff',
-  'citizen',
-  'maniac',
-  'doctor',
-  'mafia',
-  'don',
-]
-
-const rolesWeights: Record<GameRole, number> = {
-  sheriff: 1,
-  citizen: 0,
-  doctor: 2,
-  maniac: 5,
-  mafia: 3,
-  don: 4,
-}
-
-const validateRole = (role: GameRole) => allRoles.includes(role)
+import { GamePlayer, GameState, GameTeam, GameRole } from './types'
 
 const getTeamByRole = (role: GameRole): GameTeam =>
   // У роли "Маньяк" команда "Маньяк".
@@ -30,7 +10,7 @@ const getTeamByRole = (role: GameRole): GameTeam =>
       : // Все остальные поддерживаемые роли относятся к мирному городу.
         'town'
 
-const checkVictoryCondition = (roles: GameRole[]): GameTeam | null => {
+export const checkVictoryCondition = (roles: GameRole[]): GameTeam | null => {
   const teamRepresentatives = roles
     .map(getTeamByRole)
     .reduce<Record<GameTeam, number>>(
@@ -69,73 +49,43 @@ const checkVictoryCondition = (roles: GameRole[]): GameTeam | null => {
         'town'
 }
 
-export const sortRoles = (roles: GameRole[]) =>
-  roles
-    .filter(role => role !== 'citizen')
-    .toSorted((role1, role2) => rolesWeights[role2] - rolesWeights[role1])
-
-export const revealRoles = (roles: GameRole[]) =>
-  Object.fromEntries(
-    roles
-      .reduce((map, role, index) => {
-        if (role === 'citizen') {
-          return map
-        }
-
-        const value = map.get(role)
-
-        if (value) {
-          const list = Array.isArray(value) ? value : [value]
-
-          list.push(index)
-          list.sort()
-
-          map.set(role, list)
-        } else {
-          map.set(role, index)
-        }
-
-        return map
-      }, new Map<GameRole, number[] | number>())
-      .entries(),
-  )
+export const copyPlayers = (players: GamePlayer[]): GamePlayer[] =>
+  players.map(player => ({ ...player }))
 
 export const createPlayer = (role: GameRole): GamePlayer => ({
   alive: true,
   role,
 })
 
-export const validateStartRoles = (roles: GameRole[]) => {
-  // Если переданы неизвестные роли — это неправильно.
-  if (!roles || !roles.every(validateRole)) {
-    return false
-  }
+export const getAliveRoles = (players: GamePlayer[]) =>
+  players.filter(player => player.alive).map(player => player.role)
 
-  const { sheriff, maniac, doctor, don } = roles.reduce<
-    Record<GameRole, number>
-  >(
-    (acc, role) => {
-      acc[role]++
+export const createDaySpeeches = (players: GamePlayer[], turn: number) => {
+  const aliveIndices = players.reduce<number[]>((acc, { alive }, index) => {
+    if (alive) {
+      acc.push(index)
+    }
 
-      return acc
-    },
-    {
-      sheriff: 0,
-      citizen: 0,
-      maniac: 0,
-      doctor: 0,
-      mafia: 0,
-      don: 0,
-    },
+    return acc
+  }, [])
+
+  const firstSpeakerIndex = Math.max(
+    aliveIndices.findIndex(index => index >= turn),
+    0,
   )
 
-  // Если у какой-либо из отдельно действующих ролей
-  // больше одного представителя — это неправильно.
-  // Если есть дон, но нет шерифа — это неправильно.
-  if (sheriff > 1 || maniac > 1 || doctor > 1 || don > 1 || (don && !sheriff)) {
-    return false
-  }
-
-  // Если игра не может продолжаться с текущими ролями — это неправильно.
-  return !checkVictoryCondition(roles)
+  return [
+    ...aliveIndices.slice(firstSpeakerIndex),
+    ...aliveIndices.slice(0, firstSpeakerIndex),
+  ]
 }
+
+export const createFirstState = (roles: GameRole[]): GameState => ({
+  players: roles.map(createPlayer),
+  time: 'morning',
+  stage: 'info',
+  speeches: [],
+  winner: null,
+  victims: [],
+  opener: 0,
+})
