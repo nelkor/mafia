@@ -1,0 +1,25 @@
+export type GameTeam = 'singleton' | 'mafia' | 'town'
+
+export type GameRole =
+  | 'bodyguard'
+  | 'poisoner'
+  | 'ricochet'
+  | 'swindler'
+  | 'sheriff'
+  | 'citizen'
+  | 'maniac'
+  | 'doctor'
+  | 'masker'
+  | 'mafia'
+  | 'heir'
+  | 'don'
+
+export type GamePhase =
+  | 'evening-to-night'
+  | 'day-to-evening'
+  | 'morning'
+  | 'evening'
+  | 'night'
+  | 'dawn'
+  | 'day'
+  | 'end'
