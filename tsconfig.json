@@ -2,6 +2,10 @@
   "compilerOptions": {
     "strict": true,
     "skipLibCheck": true,
-    "lib": ["DOM", "ESNext"]
+    "lib": ["DOM", "ESNext"],
+    "baseUrl": ".",
+    "paths": {
+      "@core/*": ["./src/core/*"]
+    }
   }
 }
